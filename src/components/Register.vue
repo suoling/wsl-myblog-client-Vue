@@ -73,6 +73,7 @@ export default {
     };
     return {
       ruleForm: {
+        exist: false,
         phone: '',
         pass: '',
         checkPass: ''

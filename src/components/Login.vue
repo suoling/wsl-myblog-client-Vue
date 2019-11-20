@@ -31,7 +31,7 @@ import { userLogin } from '../api/user'
 
 export default {
   data() {
-    var checkPhone = async (rule, value, callback) => {
+    const checkPhone = async (rule, value, callback) => {
       if (!value) {
         return callback(new Error('手机号不能为空'));
       }
@@ -43,7 +43,7 @@ export default {
         callback()
       }
     };
-    var validatePass = (rule, value, callback) => {
+    const validatePass = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入密码'));
       } else {
@@ -59,12 +59,8 @@ export default {
         pass: ''
       },
       rules: {
-        phone: [
-          { validator: checkPhone, trigger: 'blur' }
-        ],
-        pass: [
-          { validator: validatePass, trigger: 'blur' }
-        ]
+        phone: [ { validator: checkPhone, trigger: 'blur' } ],
+        pass: [ { validator: validatePass, trigger: 'blur' } ]
       }
     };
   },
@@ -76,10 +72,10 @@ export default {
           const res = await userLogin({ phone, pass })
           console.log('res:', res)
           if (res.code === '000000') {
+            this.$store.commit('user/set_user_id', { userId: res.userId });
             this.$router.push('/publish/article')
           }
         } else {
-          console.log('error submit!!');
           return false;
         }
       });
