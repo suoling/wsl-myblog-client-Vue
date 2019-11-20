@@ -16,7 +16,13 @@
       <el-row :gutter="20">
         <el-col :span="2">正文：</el-col>
         <el-col :span="20">
-          <mavon-editor toolbarsBackground="#E9EEF3" v-model="text" @save="saveHandle" />
+          <mavon-editor
+            toolbarsBackground="#E9EEF3"
+            v-model="text"
+            @save="saveHandle"
+            @imgAdd="imgAdd"
+            @imgDel="imgDel"
+          />
         </el-col>
       </el-row>
       <el-row type="flex" justify="center">
@@ -33,7 +39,7 @@
 
 <script>
 import { mapState } from 'vuex';
-import { articleWrite } from '../api/article'
+import { articlePublish, articleQuery, imgUpload } from '../api/article'
 export default {
   data () {
     return {
@@ -48,21 +54,50 @@ export default {
   },
 
   methods: {
+  
+    // md正文保存
     saveHandle () {
       console.log('text:', this.text)
     },
+  
+    // 发布文章
     async submitArticle () {
       const { userId, title, desc, text } = this
-      const res = await articleWrite({ userId, title, desc, text })
+      const res = await articlePublish({ userId, title, desc, text })
       console.log('res:', res)
     },
+  
+    // 取消发布文章
     cancelArticle () {
+      this.title = ''
+      this.desc = '',
+      this.text = ''
       console.log('cancel')
+    },
+  
+    // 图片上传
+    async imgAdd (pos, $file) {
+      console.log('pos, $file:', pos, $file)
+      // 第一步.将图片上传到服务器.
+      const data = new FormData();
+      data.append('image', $file);
+      console.log('data:', data)
+      const res = await imgUpload({ data })
+      console.log('imgUpload:', res)
+    },
+
+    // 图片删除
+    imgDel () {
+
     }
   },
 
-  created () {
+  async created () {
     console.log('userId:', this.userId)
+    // 文章列表查询测试
+    const { userId } = this
+    const res = await articleQuery({userId})
+    console.log('res:', res)
   }
 }
 </script>
