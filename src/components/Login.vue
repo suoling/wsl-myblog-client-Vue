@@ -73,7 +73,7 @@ export default {
           console.log('res:', res)
           if (res.code === '000000') {
             this.$store.commit('user/set_user_id', { userId: res.userId });
-            this.$router.push('/publish/article')
+            this.$router.push('/article/list')
           }
         } else {
           return false;

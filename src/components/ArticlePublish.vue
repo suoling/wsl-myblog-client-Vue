@@ -39,7 +39,7 @@
 
 <script>
 import { mapState } from 'vuex';
-import { articlePublish, articleQuery, imgUpload } from '../api/article'
+import { articlePublish, imgUpload } from '../api/article'
 export default {
   data () {
     return {
@@ -94,10 +94,6 @@ export default {
 
   async created () {
     console.log('userId:', this.userId)
-    // 文章列表查询测试
-    const { userId } = this
-    const res = await articleQuery({userId})
-    console.log('res:', res)
   }
 }
 </script>
