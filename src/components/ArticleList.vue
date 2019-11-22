@@ -11,7 +11,7 @@
       >
         <div class="item-top">
           <div class="title">{{item.title}}</div>
-          <div class="delete" @click="deleteArticle(item.user_id, item.article_id)">删除</div>
+          <div class="delete" @click.stop="deleteArticle(item.user_id, item.article_id)">删除</div>
         </div>
         <div>{{item.description}}</div>
         <!-- style='-webkit-box-orient: vertical' -->

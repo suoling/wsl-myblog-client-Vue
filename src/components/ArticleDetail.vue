@@ -1,6 +1,6 @@
 <template>
   <div class="article-detail">
-    <div class="top"><span>编辑</span></div>
+    <div class="top"><span @click="toEdit(data.user_id, data.article_id)">编辑</span></div>
     <div class="detail">
       <h1>{{data.title}}</h1>
       <div class="desc">{{data.description}}</div>
@@ -16,13 +16,21 @@ import marked from 'marked'
 export default {
   data () {
     return {
-      data: null
+      data: {
+        title: '',
+        description: '',
+        text: ''
+      }
     }
   },
 
   methods: {
     textRender (text) {
       return marked(text)
+    },
+    // 去往文章编辑页面
+    toEdit (userId, articleId) {
+      this.$router.push(`/article/edit/${userId}/${articleId}`)
     }
   },
 
@@ -31,7 +39,7 @@ export default {
     console.log(userId, articleId)
     const res = await articleQueryById({ userId, articleId })
     console.log('res:', res)
-    this.data = res.data[0]
+    this.data = Object.assign(this.data, res.data[0])
   }
 }
 </script>

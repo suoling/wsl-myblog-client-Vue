@@ -65,6 +65,7 @@ export default {
       const { userId, title, desc, text } = this
       const res = await articlePublish({ userId, title, desc, text })
       console.log('res:', res)
+      this.$router.push('/article/list')
     },
   
     // 取消发布文章
@@ -72,7 +73,7 @@ export default {
       this.title = ''
       this.desc = '',
       this.text = ''
-      console.log('cancel')
+      this.$router.push('/article/list')
     },
   
     // 图片上传
