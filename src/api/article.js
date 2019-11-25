@@ -1,26 +1,31 @@
-import request from '../libs/request'
+import { request, requestForm } from '../libs/request'
 
 // 文章发布
-export const articlePublish = async function ({ userId, title, desc, text }) {
-  return await request('article/publish', { userId, title, desc, text })
+export const articlePublish = async function ({ user_id, title, md_content }) {
+  return await request('article/publish', { user_id, title, md_content })
 }
 
 // 文章列表查询
-export const articleQuery = async function ({ userId }) {
-  return await request('article/query', { userId })
+export const articleQuery = async function ({ user_id }) {
+  return await request('article/query', { user_id })
 }
 
 // 文章删除
-export const articleDelete = async function ({ userId, articleId }) {
-  return await request('article/delete', { userId, articleId })
+export const articleDelete = async function ({ id, user_id }) {
+  return await request('article/delete', { id, user_id })
 }
 
 // 查询指定的文章
-export const articleQueryById = async function ({ userId, articleId }) {
-  return await request('article/queryById', { userId, articleId })
+export const articleQueryById = async function ({ id, user_id }) {
+  return await request('article/queryById', { id, user_id })
+}
+
+// 文章编辑
+export const articleEdit = async function ({ id, user_id, title, md_content }) {
+  return await request('article/edit', { id, user_id, title, md_content })
 }
 
 // 图片上传
-export const imgUpload = async function ({ data }) {
-  return await request('article/img/upload', { data }, 'post', { 'Content-Type': 'multipart/form-data' })
+export const articleUpload = async function (type, file) {
+  return await requestForm('article/upload', type, file)
 }

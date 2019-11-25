@@ -72,7 +72,7 @@ export default {
           const res = await userLogin({ phone, pass })
           console.log('res:', res)
           if (res.code === '000000') {
-            this.$store.commit('user/set_user_id', { userId: res.userId });
+            this.$store.commit('user/set_user_id', { user_id: res.userId });
             this.$router.push('/article/list')
           }
         } else {

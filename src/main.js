@@ -7,8 +7,12 @@ import 'element-ui/lib/theme-chalk/index.css';
 import mavonEditor from 'mavon-editor'
 import 'mavon-editor/dist/css/index.css'
 import './assets/styles/reset.scss'
-import hljs from 'highlight.js'
-// import './assets/styles/markdown.scss' //引入代码高亮的css
+
+import hljs from 'highlight.js/lib/highlight';
+import javascript from 'highlight.js/lib/languages/javascript';
+hljs.registerLanguage('javascript', javascript);
+import 'highlight.js/styles/github.css';
+import 'github-markdown-css'
 
 Vue.use(ElementUI);
 Vue.use(mavonEditor);

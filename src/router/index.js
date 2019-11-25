@@ -36,13 +36,13 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: '/article/detail/:userId/:articleId',
+    path: '/article/detail/:user_id/:id',
     name: 'article/detail',
     component: ArticleDetail,
     meta: { requiresAuth: true },
   },
   {
-    path: '/article/edit/:userId/:articleId',
+    path: '/article/edit/:user_id/:id',
     name: 'article/edit',
     component: ArticleEdit,
     meta: { requiresAuth: true },

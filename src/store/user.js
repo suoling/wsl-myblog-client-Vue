@@ -3,7 +3,7 @@ const types = {
 };
 
 const initState = () => ({
-  userId: null, // 企业微信的唯一标识
+  user_id: null, // 企业微信的唯一标识
 });
 const state = initState();
 
@@ -12,7 +12,7 @@ const getters = {};
 const mutations = {
   [types.SET_USER_ID](state, payload) {
     console.log(state, payload)
-    state.userId = payload.userId;
+    state.userId = payload.user_id;
   },
 };
 

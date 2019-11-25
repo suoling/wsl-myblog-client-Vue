@@ -8,18 +8,13 @@
         </el-col>
       </el-row>
       <el-row :gutter="20">
-        <el-col :span="2">描述：</el-col>
-        <el-col :span="16">
-          <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 4}" placeholder="请输入描述" v-model="desc"></el-input>
-        </el-col>
-      </el-row>
-      <el-row :gutter="20">
         <el-col :span="2">正文：</el-col>
         <el-col :span="20">
           <mavon-editor
+            ref="markdown"
             toolbarsBackground="#E9EEF3"
-            v-model="text"
-            @save="saveHandle"
+            :ishljs = "true"
+            v-model="md_content"
             @imgAdd="imgAdd"
             @imgDel="imgDel"
           />
@@ -39,62 +34,63 @@
 
 <script>
 import { mapState } from 'vuex';
-import { articlePublish, imgUpload } from '../api/article'
+import { articlePublish, articleUpload } from '../api/article';
+
 export default {
   data () {
     return {
       title: '',
-      desc: '',
-      text: ''
+      md_content: ''
     }
   },
 
   computed: {
-    ...mapState('user', ['userId']),
+    ...mapState('user', ['user_id']),
   },
 
   methods: {
-  
-    // md正文保存
-    saveHandle () {
-      console.log('text:', this.text)
-    },
-  
-    // 发布文章
-    async submitArticle () {
-      const { userId, title, desc, text } = this
-      const res = await articlePublish({ userId, title, desc, text })
-      console.log('res:', res)
-      this.$router.push('/article/list')
-    },
-  
-    // 取消发布文章
-    cancelArticle () {
-      this.title = ''
-      this.desc = '',
-      this.text = ''
-      this.$router.push('/article/list')
-    },
-  
     // 图片上传
     async imgAdd (pos, $file) {
       console.log('pos, $file:', pos, $file)
-      // 第一步.将图片上传到服务器.
-      const data = new FormData();
-      data.append('image', $file);
-      console.log('data:', data)
-      const res = await imgUpload({ data })
-      console.log('imgUpload:', res)
+      const res = await articleUpload('image', $file)
+      this.$refs.markdown.$img2Url(pos, res.imgUrl);
+      console.log('upload res:', res)
     },
 
     // 图片删除
     imgDel () {
 
-    }
+    },
+
+    // 发布文章
+    async submitArticle () {
+      const { user_id, title, md_content } = this
+      if (!title) {
+        return
+      }
+      if (!md_content) {
+        return
+      }
+      const res = await articlePublish({ user_id, title, md_content })
+      console.log('res:', res)
+      if (res.code === '000000') {
+        this.$router.push('/article/list')
+      } else {
+        this.$message.error(res.msg);
+      }
+
+    },
+
+    // 取消发布文章
+    cancelArticle () {
+      this.title = ''
+      this.user_id = ''
+      this.$router.push('/article/list')
+    },
   },
 
   async created () {
-    console.log('userId:', this.userId)
+    console.log('userId:', this.user_id)
   }
 }
 </script>

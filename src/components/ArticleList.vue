@@ -7,15 +7,13 @@
       <div class="item"
         v-for="(item, index) in articleList"
         :key="index"
-        @click="toDetail(item.user_id, item.article_id)"
+        @click="toDetail(item.id, item.user_id)"
       >
         <div class="item-top">
           <div class="title">{{item.title}}</div>
-          <div class="delete" @click.stop="deleteArticle(item.user_id, item.article_id)">删除</div>
+          <div class="delete" @click.stop="deleteArticle(item.id, item.user_id)">删除</div>
         </div>
         <div>{{item.description}}</div>
-        <!-- style='-webkit-box-orient: vertical' -->
-        <div class="content" v-highlight  v-html="textRender(item.text)"></div>
       </div>
     </div>
   </div>
@@ -23,8 +21,7 @@
 
 <script>
 import { mapState } from 'vuex';
-import marked from 'marked'
-import { articleQuery, articleDelete } from '../api/article'
+import { articleQuery, articleDelete } from '../api/article';
 
 export default {
   data () {
@@ -34,39 +31,50 @@ export default {
   },
 
   computed: {
-    ...mapState('user', ['userId']),
+    ...mapState('user', ['user_id']),
   },
 
   async created () {
-    console.log('userId:', this.userId)
+    console.log('user_id:', this.user_id)
     this.query()
   },
 
   methods: {
     // 文章列表查询
     async query () {
-      const { userId } = this
-      const res = await articleQuery({userId})
+      const { user_id } = this
+      const res = await articleQuery({ user_id })
       console.log('res:', res)
-      this.articleList = res.data
+      if (res.code === '000000') {
+        this.articleList = Object.assign(res.articleList)
+      } else {
+        this.$message.error(res.msg);
+      }
     },
-    // markdown渲染成html
-    textRender (text) {
-      return marked(text)
-    },
+
     // 跳转至发布文章页
     articlePublish () {
       this.$router.push('/article/publish')
     },
-    // 删除文章
-    async deleteArticle (userId, articleId) {
-      const res = await articleDelete({ userId, articleId })
+
+    // 文章删除
+    async deleteArticle (id, user_id) {
+      const res = await articleDelete({ id, user_id })
       console.log('res:', res)
-      this.query()
+      if (res.code === '000000') {
+        this.$message({
+          type: 'success',
+          message: res.msg
+        });
+        this.query()
+      } else {
+        this.$message.error(res.msg);
+      }
     },
+
     // 跳转至文章详情
-    toDetail (userId, articleId) {
-      this.$router.push(`/article/detail/${userId}/${articleId}`)
+    toDetail (id, user_id) {
+      this.$router.push(`/article/detail/${id}/${user_id}`)
     }
   }
 }
@@ -103,12 +111,6 @@ export default {
         .delete {
           cursor: pointer;
         }
-      }
-      .text {
-        // overflow: hidden;
-        // text-overflow: ellipsis;
-        // display: -webkit-box;
-        // -webkit-line-clamp: 4;
       }
     }
   }

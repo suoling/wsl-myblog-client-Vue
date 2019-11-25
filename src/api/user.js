@@ -1,4 +1,4 @@
-import request from '../libs/request'
+import { request } from '../libs/request'
 
 // 用户注册
 export const userRegister = async function ({ phone, pass }) {
