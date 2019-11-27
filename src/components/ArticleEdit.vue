@@ -37,7 +37,7 @@
 
 <script>
 import { mapState } from 'vuex';
-import { articleQueryById, articleUpload, articleEdit } from '../api/article';
+import { articleDetail, articleUpload, articleEdit } from '../api/article';
 
 export default {
   data () {
@@ -67,11 +67,15 @@ export default {
 
     // 文章编辑提交
     async submitArticle () {
-      const { id, user_id } = this.$route.params
+      const { id } = this.$route.params
       const { title, md_content } = this
-      const res = await articleEdit({ id, user_id, title, md_content })
-      console.log('res:', res)
-      this.$router.push('/article/list')
+      const res = await articleEdit({ id, title, md_content })
+      if (res.code === '000000') {
+        console.log('res:', res)
+        this.$router.push('/article/list')
+      } else {
+        this.$message.error(res.msg);
+      }
     },
 
     // 取消文章编辑
@@ -83,10 +87,11 @@ export default {
   },
 
   async created () {
-    const { id, user_id } = this.$route.params
-    const res = await articleQueryById({ id, user_id })
+    const { id } = this.$route.params
+    const res = await articleDetail({ id })
     console.log('res:', res)
-    this.data = Object.assign({}, res.articleDetail)
+    this.title = res.articleDetail.title
+    this.md_content = res.articleDetail.md_content
   }
 }
 </script>

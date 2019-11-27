@@ -1,6 +1,8 @@
 <template>
   <div class="article-detail">
-    <div class="top"><span @click="toEdit()">编辑</span></div>
+    <div class="top">
+      <el-button type="primary" @click="toEdit()">编辑</el-button>
+    </div>
     <div class="detail">
       <h1>{{title}}</h1>
       <div v-html="textRender(md_content)"></div>
@@ -9,7 +11,7 @@
 </template>
 
 <script>
-import { articleQueryById } from '../api/article'
+import { articleDetail } from '../api/article'
 import marked from 'marked'
 
 export default {
@@ -30,17 +32,20 @@ export default {
 
     // 去往文章编辑页面
     toEdit () {
-      this.$router.push(`/article/edit/${this.id}/${this.user_id}`)
+      this.$router.push(`/article/edit/${this.id}`)
     }
   },
 
   async mounted () {
-    const { id, user_id } = this.$route.params
-    console.log(id, user_id)
-    const res = await articleQueryById({ id, user_id })
+    const { id } = this.$route.params
+    console.log(id)
+    const res = await articleDetail({ id })
     if (res.code === '000000') {
       console.log('res:', res)
-      this.data = Object.assign({}, res.articleDetail)
+      this.id = res.articleDetail.id
+      this.user_id = res.articleDetail.user_id
+      this.title = res.articleDetail.title
+      this.md_content = res.articleDetail.md_content
     } else {
       this.$message.error(res.msg);
     }

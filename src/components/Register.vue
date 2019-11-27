@@ -34,7 +34,7 @@ import { userRegister, userCheckPhone } from '../api/user'
 
 export default {
   data() {
-    var checkPhone = async (rule, value, callback) => {
+    let checkPhone = async (rule, value, callback) => {
       if (!value) {
         return callback(new Error('手机号不能为空'));
       }
@@ -52,7 +52,7 @@ export default {
         }
       }
     };
-    var validatePass = (rule, value, callback) => {
+    let validatePass = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入密码'));
       } else {
@@ -62,7 +62,7 @@ export default {
         callback();
       }
     };
-    var validatePass2 = (rule, value, callback) => {
+    let validatePass2 = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请再次输入密码'));
       } else if (value !== this.ruleForm.pass) {
@@ -72,22 +72,11 @@ export default {
       }
     };
     return {
-      ruleForm: {
-        exist: false,
-        phone: '',
-        pass: '',
-        checkPass: ''
-      },
+      ruleForm: { exist: false, phone: '', pass: '', checkPass: '' },
       rules: {
-        phone: [
-          { validator: checkPhone, trigger: 'blur' }
-        ],
-        pass: [
-          { validator: validatePass, trigger: 'blur' }
-        ],
-        checkPass: [
-          { validator: validatePass2, trigger: 'blur' }
-        ]
+        phone: [{ validator: checkPhone, trigger: 'blur' }],
+        pass: [{ validator: validatePass, trigger: 'blur' }],
+        checkPass: [{ validator: validatePass2, trigger: 'blur' }]
       }
     };
   },

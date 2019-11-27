@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { userLogin } from '../api/user'
+import { userLogin, userCheckPhone } from '../api/user'
 
 export default {
   data() {
@@ -40,7 +40,13 @@ export default {
       } else if (!(/^1\d{10}$/.test(value))) {
           callback(new Error('手机号格式输入错误'));
       } else {
-        callback()
+        const phone = value
+        const res = await userCheckPhone({ phone })
+        if (!res.exist) {
+          callback(new Error(res.msg));
+        } else {
+          callback()
+        }
       }
     };
     const validatePass = (rule, value, callback) => {
@@ -54,10 +60,7 @@ export default {
       }
     };
     return {
-      ruleForm: {
-        phone: '',
-        pass: ''
-      },
+      ruleForm: { phone: '', pass: '' },
       rules: {
         phone: [ { validator: checkPhone, trigger: 'blur' } ],
         pass: [ { validator: validatePass, trigger: 'blur' } ]
@@ -72,8 +75,10 @@ export default {
           const res = await userLogin({ phone, pass })
           console.log('res:', res)
           if (res.code === '000000') {
-            this.$store.commit('user/set_user_id', { user_id: res.userId });
+            this.$store.commit('user/set_user_id', { user_id: res.user_id });
             this.$router.push('/article/list')
+          } else {
+            this.$message.error(res.msg);
           }
         } else {
           return false;

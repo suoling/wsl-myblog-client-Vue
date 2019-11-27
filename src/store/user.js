@@ -12,7 +12,7 @@ const getters = {};
 const mutations = {
   [types.SET_USER_ID](state, payload) {
     console.log(state, payload)
-    state.userId = payload.user_id;
+    state.user_id = payload.user_id;
   },
 };
 
