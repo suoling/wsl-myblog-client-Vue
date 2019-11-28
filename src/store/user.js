@@ -1,27 +1,32 @@
+import { userLogin } from '../api/user'
+
 const types = {
-  SET_USER_ID: 'set_user_id'
+  SET_USER_INFO: 'set_user_info'
 };
 
 const initState = () => ({
-  user_id: null, // 企业微信的唯一标识
+  is_login: false,
+  login_id: null,
 });
 const state = initState();
 
 const getters = {};
 
 const mutations = {
-  [types.SET_USER_ID](state, payload) {
+  [types.SET_USER_INFO](state, payload) {
     console.log(state, payload)
-    state.user_id = payload.user_id;
+    state.is_login = true;
+    state.login_id = payload.login_id;
   },
 };
 
 const actions = {
-  // async login({ commit, state }, payload) {
-  //   const response = await authLogin(payload, state.loginType);
-  //   commit(types.SET_USER_INFO, response);
-  //   return response;
-  // }
+  async login({ commit }, payload) {
+    const { phone, pass } = payload
+    const res = await userLogin({ phone, pass })
+    commit(types.SET_USER_INFO, res);
+    return res;
+  },
 };
 
 export default {

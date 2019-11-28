@@ -1,10 +1,16 @@
 import axios from 'axios'
 import { API_ROOT } from '../const/env'
+import store from '../store';
 
-export const request = async function (requestUrl, data, method = 'post') {
-  let url = `${API_ROOT}/${requestUrl}`
+export const request = async function (requestUrl, data) {
+  const url = `${API_ROOT}/${requestUrl}`
+  const { is_login, login_id } = store.state.user
+  const header = is_login ? { login_id } : {}
+  const config = {
+    headers: { "Content-Type": "application/json", ...header },
+  };
   try {
-    const res = await axios({ method, url, data });
+    const res = await axios.post(url, data, config);
     return res.data
   } catch(err) {
     throw new Error(err)
@@ -12,10 +18,10 @@ export const request = async function (requestUrl, data, method = 'post') {
 }
 
 export const requestForm = async function (requestUrl, type, file) {
-  let url = `${API_ROOT}/${requestUrl}`
-  let param = new FormData();
+  const url = `${API_ROOT}/${requestUrl}`
+  const param = new FormData();
   param.append(type, file);
-  let config = {
+  const config = {
     //添加请求头
     headers: { "Content-Type": "multipart/form-data" },
     //添加上传进度监听事件

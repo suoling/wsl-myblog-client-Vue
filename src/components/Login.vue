@@ -27,7 +27,8 @@
 </template>
 
 <script>
-import { userLogin, userCheckPhone } from '../api/user'
+import { mapState, mapActions } from 'vuex';
+import { userCheckPhone } from '../api/user'
 
 export default {
   data() {
@@ -67,19 +68,29 @@ export default {
       }
     };
   },
+
+  computed: {
+    ...mapState('user', ['is_login', 'login_id']),
+
+  },
+
+  watch: {
+    is_login (val) {
+      console.log('is_login:', this.is_login)
+      if (val) {
+        this.$router.push('/article/list')
+      }
+    }
+  },
+
   methods: {
+    ...mapActions('user', ['login']),
+  
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           const { phone, pass } = this.ruleForm
-          const res = await userLogin({ phone, pass })
-          console.log('res:', res)
-          if (res.code === '000000') {
-            this.$store.commit('user/set_user_id', { user_id: res.user_id });
-            this.$router.push('/article/list')
-          } else {
-            this.$message.error(res.msg);
-          }
+          await this.login({ phone, pass })
         } else {
           return false;
         }
@@ -90,11 +101,11 @@ export default {
     },
     signUp () {
       this.$router.push('/')
-    }
+    },
   },
 
   created () {
-
+    console.log('login_id:', this.is_login, this.login_id)
   }
 }
 </script>

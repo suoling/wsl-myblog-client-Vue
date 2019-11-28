@@ -1,51 +1,60 @@
 <template>
   <div class="article-detail">
     <div class="top">
-      <el-button type="primary" @click="toEdit()">编辑</el-button>
+      <div class="title">{{articleDetail.title}}</div>
+      <div>
+        <el-button @click="toList()">返回列表</el-button>
+        <el-button type="primary" v-if="articleDetail.user_id === login_id" @click="toEdit()">编辑</el-button>
+      </div>
     </div>
-    <div class="detail">
-      <h1>{{title}}</h1>
-      <div v-html="textRender(md_content)"></div>
+    <div class="detail markdown-body">
+      <mavon-editor
+        class="md"
+        :value="articleDetail.md_content"
+        :subfield = "false"
+        :defaultOpen = "'preview'"
+        :toolbarsFlag = "false"
+        :editable="false"
+        :scrollStyle="true"
+        :ishljs = "true"
+      ></mavon-editor>
     </div>
   </div>
 </template>
 
 <script>
+import { mapState } from 'vuex';
 import { articleDetail } from '../api/article'
-import marked from 'marked'
 
 export default {
   data () {
     return {
-      id: null,
-      user_id: null,
-      title: '',
-      md_content: ''
+      articleDetail: ''
     }
   },
 
+  computed: {
+    ...mapState('user', ['login_id']),
+  },
+
   methods: {
-    // md渲染成html
-    textRender (md_content) {
-      return marked(md_content)
+    // 返回列表页
+    toList () {
+      this.$router.push(`/article/list`)
     },
 
     // 去往文章编辑页面
     toEdit () {
-      this.$router.push(`/article/edit/${this.id}`)
+      this.$router.push(`/article/edit/${this.articleDetail.id}`)
     }
   },
 
   async mounted () {
     const { id } = this.$route.params
-    console.log(id)
     const res = await articleDetail({ id })
     if (res.code === '000000') {
       console.log('res:', res)
-      this.id = res.articleDetail.id
-      this.user_id = res.articleDetail.user_id
-      this.title = res.articleDetail.title
-      this.md_content = res.articleDetail.md_content
+      this.articleDetail = res.articleDetail
     } else {
       this.$message.error(res.msg);
     }
@@ -57,18 +66,23 @@ export default {
 .article-detail {
   width: 100%;
   height: 100%;
+  padding-bottom: 20px;
   .top {
-    height: 30px;
-    line-height: 30px;
-    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    line-height: 40px;
     padding: 10px;
     box-sizing: border-box;
+    .title {
+      font-size: 30px;
+      font-weight: bold;
+    }
     span {
       cursor: pointer;
     }
   }
   .detail {
-    height: calc(100% - 30px);
+    height: calc(100% - 60px);
     overflow: auto;
     padding: 10px;
     box-sizing: border-box;

@@ -1,13 +1,8 @@
 import { request, requestForm } from '../libs/request'
 
-// 文章列表-所有
-export const articleAllQuery = async function () {
-  return await request('article/queryAll' )
-}
-
 // 文章列表-指定用户
-export const articleQueryByUser = async function ({ user_id }) {
-  return await request('article/queryByUser', { user_id })
+export const articleQuery = async function ({ type, login_id }) {
+  return await request('article/query', { type, login_id })
 }
 
 // 文章详情
@@ -16,13 +11,13 @@ export const articleDetail = async function ({ id }) {
 }
 
 // 文章发布
-export const articlePublish = async function ({ user_id, title, md_content }) {
-  return await request('article/publish', { user_id, title, md_content })
+export const articlePublish = async function ({ login_id, title, md_content, html_code }) {
+  return await request('article/publish', { login_id, title, md_content, html_code })
 }
 
 // 文章编辑
-export const articleEdit = async function ({ id, title, md_content }) {
-  return await request('article/edit', { id, title, md_content })
+export const articleEdit = async function ({ id, title, md_content, html_code }) {
+  return await request('article/edit', { id, title, md_content, html_code })
 }
 
 // 文章删除

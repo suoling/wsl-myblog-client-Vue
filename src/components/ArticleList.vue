@@ -1,127 +1,74 @@
 <template>
   <div class="article-list">
     <div class="top">
-      <el-button type="primary" @click="articlePublish">写文章</el-button>
+      <div>
+        <el-button type="primary" @click="query('all')">所有</el-button>
+        <el-button type="primary" @click="query('mine')">我的</el-button>
+      </div>
+      <div>
+        <el-button type="primary" @click="articlePublish">写文章</el-button>
+      </div>
     </div>
-    <div class="list">
-      <el-tabs tab-position="top" style="height: 200px;" @tab-click="handleClick">
-        <el-tab-pane label="所有" name="0">
-          <div class="list" v-if="articleAllList && articleAllList.length">
-            <div class="item"
-                 v-for="(item, index) in articleAllList"
-                 :key="index"
-                 @click="toDetail(item.id)"
-            >
-              <div class="item-top">
-                <div class="title">{{item.title}}</div>
-                <div class="delete"
-                  v-if="item.user_id === user_id"
-                  @click.stop="deleteArticle(item.id)"
-                >删除</div>
-              </div>
-              <div class="item-middle">{{item.description}}</div>
-              <div class="item-bottom">
-                <i class="el-icon-thumb"
-                   :class="active ? 'actived' : ''"
-                   @click.stop="thumb()">
-                  <span>{{ item.thumbNum }}</span>
-                </i>
-              </div>
-            </div>
-          </div>
-          <div class="no-data" v-else>
-            该用户暂未发布文章，请点击右上角写文章去发布吧
-          </div>
-        </el-tab-pane>
-        <el-tab-pane label="我的" name="1">
-          <div class="list" v-if="articleList && articleList.length">
-            <div class="item"
-                 v-for="(item, index) in articleList"
-                 :key="index"
-                 @click="toDetail(item.id)"
-            >
-              <div class="item-top">
-                <div class="title">{{item.title}}</div>
-                <div class="delete" @click.stop="deleteArticle(item.id)">删除</div>
-              </div>
-              <div class="item-middle">{{item.description}}</div>
-              <div class="item-bottom">
-                <i class="el-icon-thumb"
-                   :class="active ? 'actived' : ''"
-                   @click.stop="thumb()">
-                  <span>111</span>
-                </i>
-              </div>
-            </div>
-          </div>
-          <div class="no-data" v-else>
-            该用户暂未发布文章，请点击右上角写文章去发布吧
-          </div>
-        </el-tab-pane>
-      </el-tabs>
+    <div class="list" v-if="articleList && articleList.length">
+      <div class="item"
+            v-for="(item, index) in articleList"
+            :key="index"
+            @click="toDetail(item.id)"
+      >
+        <div class="item-top">
+          <div class="title">{{item.title}}</div>
+          <div class="delete"
+            v-if="item.user_id === login_id"
+            @click.stop="deleteArticle(item.id)"
+          >删除</div>
+        </div>
+        <div class="item-middle">{{item.description}}</div>
+        <div class="item-bottom">
+          <i class="el-icon-thumb"
+              :class="item.thumb_flag === 1 ? 'actived' : ''"
+              @click.stop="thumbOpera(item.id, item.user_id, item.thumb_flag)">
+            <span>{{ item.thumb_count }}</span>
+          </i>
+        </div>
+      </div>
+    </div>
+    <div class="no-data" v-else>
+      该用户暂未发布文章，请点击右上角写文章去发布吧
     </div>
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex';
-import { articleAllQuery, articleQueryByUser, articleDelete } from '../api/article';
-import { thumbQuery } from '../api/thumb'
+import { articleQuery, articleDelete } from '../api/article';
+import { thumb, thumbCancel } from '../api/thumb';
 
 export default {
   data () {
     return {
-      tabIndex: 0,
-      articleAllList: [],
-      articleList: [],
-      active: true
+      type: 'all',
+      articleList: []
     }
   },
 
   computed: {
-    ...mapState('user', ['user_id']),
+    ...mapState('user', ['login_id']),
   },
 
   async created () {
-    console.log('user_id:', this.user_id)
-    this.query()
+    console.log('login_id:', this.login_id)
+    this.query(this.type)
   },
 
   methods: {
     // 文章列表查询
-    async query () {
-      const { user_id, tabIndex } = this
-      if (tabIndex === 0) {
-        const res = await articleAllQuery()
-        console.log('res:', res)
-        if (res.code === '000000') {
-          this.articleAllList = Object.assign(res.articleAllList)
-        } else {
-          this.$message.error(res.msg);
-        }
-      } else if (tabIndex === 1) {
-        const res = await articleQueryByUser({ user_id })
-        console.log('res:', res)
-        if (res.code === '000000') {
-          this.articleList = Object.assign(res.articleList)
-        } else {
-          this.$message.error(res.msg);
-        }
-      }
-    },
-
-    // tab切换
-    handleClick (pane) {
-      console.log(pane.name)
-      this.tabIndex = Number(pane.name)
-      this.query()
-    },
-
-    // 获取点赞数
-    async thumbRender (item, article_id) {
-      const res = await thumbQuery({ article_id })
+    async query (type) {
+      const { login_id } = this
+      const res = await articleQuery({ type, login_id })
+      console.log('res:', res)
       if (res.code === '000000') {
-        return res.thumbNum || 0
+        this.type = type
+        this.articleList = Object.assign(res.articleList)
       } else {
         this.$message.error(res.msg);
       }
@@ -141,7 +88,7 @@ export default {
           type: 'success',
           message: res.msg
         });
-        this.query()
+        this.query(this.type)
       } else {
         this.$message.error(res.msg);
       }
@@ -152,12 +99,28 @@ export default {
       this.$router.push(`/article/detail/${id}`)
     },
 
-    // 点赞
-    thumb () {
-
+    // 点赞或者取消赞操作
+    async thumbOpera (article_id, user_id, thumb_flag) {
+      if (!this.login_id) {
+        this.$message.error('请完成登陆');
+        return
+      }
+      try {
+        let res
+        if (thumb_flag === 1) {
+          res = await thumbCancel({ user_id: this.login_id, article_id })
+        } else if (thumb_flag === 0) {
+          res = await thumb({ user_id: this.login_id, article_id })
+        }
+        if (res.code === '000000') {
+          this.query(this.type)
+        }
+      } catch (err) {
+        console.log('err:', err)
+      }
     }
 
-  }
+  },
 }
 </script>
 
@@ -166,7 +129,8 @@ export default {
   width: 100%;
   height: 100%;
   .top {
-    text-align: right;
+    display: flex;
+    justify-content: space-between;
     padding: 10px;
     box-sizing: border-box;
   }

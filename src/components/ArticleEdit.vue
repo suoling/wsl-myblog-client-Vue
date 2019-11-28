@@ -16,10 +16,11 @@
           <mavon-editor
             ref="markdown"
             toolbarsBackground="#E9EEF3"
-            :ishljs = "true"
+            :ishljs="true"
             v-model="md_content"
             @imgAdd="imgAdd"
             @imgDel="imgDel"
+            @change="change"
           />
         </el-col>
       </el-row>
@@ -43,33 +44,41 @@ export default {
   data () {
     return {
       title: '',
-      md_content: ''
+      md_content: '',
+      html_code: ''
     }
   },
 
   computed: {
-    ...mapState('user', ['user_id']),
+    ...mapState('user', ['login_id']),
   },
 
   methods: {
     // 图片上传
     async imgAdd (pos, $file) {
       console.log('pos, $file:', pos, $file)
+      this.img_file[pos] = $file;
       const res = await articleUpload('image', $file)
       this.$refs.markdown.$img2Url(pos, res.imgUrl);
       console.log('upload res:', res)
     },
 
     // 图片删除
-    imgDel () {
+    imgDel (pos) {
+      delete this.img_file[pos]
+    },
 
+    // mavon-editor编辑区域发生变化时触发
+    change (value, render) {
+      console.log(value, render)
+      this.html_code = render
     },
 
     // 文章编辑提交
     async submitArticle () {
-      const { id } = this.$route.params
-      const { title, md_content } = this
-      const res = await articleEdit({ id, title, md_content })
+      const { id } = this.$route.params;
+      const { title, md_content, html_code } = this;
+      const res = await articleEdit({ id, title, md_content, html_code })
       if (res.code === '000000') {
         console.log('res:', res)
         this.$router.push('/article/list')
@@ -80,8 +89,6 @@ export default {
 
     // 取消文章编辑
     cancelArticle () {
-      this.title = ''
-      this.md_content = ''
       this.$router.push('/article/list')
     },
   },
