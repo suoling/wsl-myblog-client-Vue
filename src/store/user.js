@@ -7,6 +7,7 @@ const types = {
 const initState = () => ({
   is_login: false,
   login_id: null,
+  phone: null,
 });
 const state = initState();
 
@@ -17,6 +18,7 @@ const mutations = {
     console.log(state, payload)
     state.is_login = true;
     state.login_id = payload.login_id;
+    state.phone = payload.phone;
   },
 };
 

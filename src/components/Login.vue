@@ -70,13 +70,12 @@ export default {
   },
 
   computed: {
-    ...mapState('user', ['is_login', 'login_id']),
+    ...mapState('user', ['login_id']),
 
   },
 
   watch: {
-    is_login (val) {
-      console.log('is_login:', this.is_login)
+    login_id (val) {
       if (val) {
         this.$router.push('/article/list')
       }
@@ -105,7 +104,7 @@ export default {
   },
 
   created () {
-    console.log('login_id:', this.is_login, this.login_id)
+    console.log('login_id:', this.login_id)
   }
 }
 </script>

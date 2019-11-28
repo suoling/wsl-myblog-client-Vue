@@ -2,8 +2,9 @@
   <div class="article-list">
     <div class="top">
       <div>
-        <el-button type="primary" @click="query('all')">所有</el-button>
-        <el-button type="primary" @click="query('mine')">我的</el-button>
+        <el-button>当前用户{{ phone }}</el-button>
+        <el-button type="primary" @click="query('all')">所有文章</el-button>
+        <el-button type="primary" @click="query('mine')">我的文章</el-button>
       </div>
       <div>
         <el-button type="primary" @click="articlePublish">写文章</el-button>
@@ -52,7 +53,7 @@ export default {
   },
 
   computed: {
-    ...mapState('user', ['login_id']),
+    ...mapState('user', ['login_id', 'phone']),
   },
 
   async created () {
@@ -76,6 +77,10 @@ export default {
 
     // 跳转至发布文章页
     articlePublish () {
+      if (!this.login_id) {
+        this.$message.error('请前往登陆');
+        return
+      }
       this.$router.push('/article/publish')
     },
 
@@ -102,7 +107,7 @@ export default {
     // 点赞或者取消赞操作
     async thumbOpera (article_id, user_id, thumb_flag) {
       if (!this.login_id) {
-        this.$message.error('请完成登陆');
+        this.$message.error('请前往登陆');
         return
       }
       try {

@@ -77,7 +77,7 @@ export default {
     // 文章编辑提交
     async submitArticle () {
       const { id } = this.$route.params;
-      const { title, md_content, html_code } = this;
+      const { title, md_content, html_code } = this
       const res = await articleEdit({ id, title, md_content, html_code })
       if (res.code === '000000') {
         console.log('res:', res)

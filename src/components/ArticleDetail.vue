@@ -1,7 +1,11 @@
 <template>
   <div class="article-detail">
     <div class="top">
-      <div class="title">{{articleDetail.title}}</div>
+      <div class="title">
+        <el-button>当前用户{{ phone }}</el-button>
+        <el-button>文章标题{{articleDetail.title}}</el-button>
+        
+      </div>
       <div>
         <el-button @click="toList()">返回列表</el-button>
         <el-button type="primary" v-if="articleDetail.user_id === login_id" @click="toEdit()">编辑</el-button>
@@ -34,7 +38,7 @@ export default {
   },
 
   computed: {
-    ...mapState('user', ['login_id']),
+    ...mapState('user', ['login_id', 'phone']),
   },
 
   methods: {
