@@ -1,8 +1,8 @@
 import { request, requestForm } from '../libs/request'
 
 // 文章列表-指定用户
-export const articleQuery = async function ({ type, login_id }) {
-  return await request('article/query', { type, login_id })
+export const articleQuery = async function ({ type, login_id, page_size, page_num }) {
+  return await request('article/query', { type, login_id, page_size, page_num })
 }
 
 // 文章详情

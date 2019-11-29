@@ -36,7 +36,7 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: '/article/detail/:id',
+    path: '/article/detail/:id/:type',
     name: 'article/detail',
     component: ArticleDetail,
     meta: { requiresAuth: true },

@@ -19,7 +19,7 @@
             <el-button @click="resetForm('ruleForm')">重置</el-button>
           </el-form-item>
           <el-form-item>
-            <el-link type="info" @click="signIn">去往登陆</el-link>
+            <el-link type="info" :underline="false" @click="signIn">去往登陆</el-link>
           </el-form-item>
         </el-form>
       </el-main>

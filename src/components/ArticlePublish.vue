@@ -67,7 +67,7 @@ export default {
 
     // mavon-editor编辑区域发生变化时触发
     change (value, render) {
-      console.log(value, render)
+      // console.log(value, render)
       this.html_code = render
     },
 
