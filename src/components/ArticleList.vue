@@ -44,7 +44,10 @@
           </i>
           <i class="el-icon-share" @click.stop="shareOpera()"></i>
           <i class="el-icon-star-on" @click.stop="starOpera()"></i>
-          <i class="el-icon-s-comment" @click.stop="commentOpera(item.id, 'comment')"></i>
+          <i class="el-icon-s-comment"
+            @click.stop="commentOpera(item.id, 'comment')">
+            <span>{{ item.comment_count }}</span>
+          </i>
         </div>
       </div>
       <p class="no-data" v-if="loading">加载中...</p>
@@ -161,7 +164,6 @@ export default {
         this.$message.error('请前往登陆');
         return
       }
-      console.log('thumb_flag:', thumb_flag)
       // 取消赞
       if (thumb_flag === 1) {
         try {
@@ -188,7 +190,6 @@ export default {
               thumb_flag: 1,
               thumb_count: item.thumb_count + 1
               })
-            console.log('itemNew:', itemNew)
             this.articleList = Object.assign([], this.articleList, { [index]: itemNew })
           } else {
             this.$message.error(res.msg);
