@@ -50,13 +50,10 @@ export default {
         }
       }
     };
-    const validatePass = (rule, value, callback) => {
+    const checkPass = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入密码'));
       } else {
-        if (this.ruleForm.checkPass !== '') {
-          this.$refs.ruleForm.validateField('checkPass');
-        }
         callback();
       }
     };
@@ -64,7 +61,7 @@ export default {
       ruleForm: { phone: '', pass: '' },
       rules: {
         phone: [ { validator: checkPhone, trigger: 'blur' } ],
-        pass: [ { validator: validatePass, trigger: 'blur' } ]
+        pass: [ { validator: checkPass, trigger: 'blur' } ]
       }
     };
   },
@@ -89,7 +86,10 @@ export default {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           const { phone, pass } = this.ruleForm
-          await this.login({ phone, pass })
+          const res = await this.login({ phone, pass })
+          if (res.code === '999999') {
+            this.$message.error(res.msg);
+          }
         } else {
           return false;
         }

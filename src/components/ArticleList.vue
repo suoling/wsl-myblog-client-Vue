@@ -39,7 +39,7 @@
         <div class="item-bottom">
           <i class="el-icon-thumb"
               :class="item.thumb_flag === 1 ? 'actived' : ''"
-              @click.stop="thumbOpera(item.id, item.user_id, item.thumb_flag)">
+              @click.stop="thumbOpera(item, index)">
             <span>{{ item.thumb_count }}</span>
           </i>
           <i class="el-icon-share" @click.stop="shareOpera()"></i>
@@ -99,15 +99,16 @@ export default {
 
     // 去往登陆
     toLogin () {
-      if (this.phone) {
-        return
-      }
       this.$router.push('/login')
     },
 
     // 文章列表查询
     async query (type) {
       const { login_id, page_num } = this
+      if (!login_id && type === 'mine') {
+        this.$message.error('请前往登陆');
+        return
+      }
       if (type !== this.type) {
         this.page_size = 0
         this.articleList = []
@@ -154,23 +155,47 @@ export default {
     },
 
     // 点赞或者取消赞操作
-    async thumbOpera (article_id, user_id, thumb_flag) {
+    async thumbOpera (item, index) {
+      const { id, thumb_flag } = item
       if (!this.login_id) {
         this.$message.error('请前往登陆');
         return
       }
-      try {
-        let res
-        if (thumb_flag === 1) {
-          res = await thumbCancel({ user_id: this.login_id, article_id })
-        } else if (thumb_flag === 0) {
-          res = await thumb({ user_id: this.login_id, article_id })
+      console.log('thumb_flag:', thumb_flag)
+      // 取消赞
+      if (thumb_flag === 1) {
+        try {
+          const res = await thumbCancel({ user_id: this.login_id, article_id: id })
+          if (res.code === '000000') {
+            const itemNew = Object.assign({}, item, {
+              thumb_flag: 0,
+              thumb_count: item.thumb_count - 1
+              })
+            this.articleList = Object.assign([], this.articleList, { [index]: itemNew })
+          } else {
+            this.$message.error(res.msg);
+          }
+        } catch(err) {
+          console.log('err:', err)
         }
-        if (res.code === '000000') {
-          this.query(this.type)
+      }
+      // 点赞
+      if (thumb_flag === 0) {
+        try {
+          const res = await thumb({ user_id: this.login_id, article_id: id  })
+          if (res.code === '000000') {
+            const itemNew = Object.assign({}, item, {
+              thumb_flag: 1,
+              thumb_count: item.thumb_count + 1
+              })
+            console.log('itemNew:', itemNew)
+            this.articleList = Object.assign([], this.articleList, { [index]: itemNew })
+          } else {
+            this.$message.error(res.msg);
+          }
+        } catch(err) {
+          console.log('err:', err)
         }
-      } catch (err) {
-        console.log('err:', err)
       }
     },
 
