@@ -12,6 +12,10 @@
           :type="type === 'mine' ? 'primary' : 'default'"
           :underline="false" @click="query('mine')"
         >我的文章</el-link>
+        <!-- <el-link
+            :type="type === 'collect' ? 'primary' : 'default'"
+            :underline="false" @click="query('collect')"
+          >我的收藏</el-link> -->
       </div>
       <div>
         <el-link :underline="false">{{totalNum}}</el-link>
@@ -60,7 +64,7 @@
 <script>
 import { mapState } from 'vuex';
 import { articleQuery, articleDelete } from '../api/article';
-import { thumb, thumbCancel } from '../api/thumb';
+import { articleThumb, articleThumbCancel } from '../api/articleThumb';
 
 export default {
   data () {
@@ -108,7 +112,7 @@ export default {
     // 文章列表查询
     async query (type) {
       const { login_id, page_num } = this
-      if (!login_id && type === 'mine') {
+      if (!login_id && type !== 'all') {
         this.$message.error('请前往登陆');
         return
       }
@@ -167,7 +171,7 @@ export default {
       // 取消赞
       if (thumb_flag === 1) {
         try {
-          const res = await thumbCancel({ user_id: this.login_id, article_id: id })
+          const res = await articleThumbCancel({ user_id: this.login_id, article_id: id })
           if (res.code === '000000') {
             const itemNew = Object.assign({}, item, {
               thumb_flag: 0,
@@ -184,7 +188,7 @@ export default {
       // 点赞
       if (thumb_flag === 0) {
         try {
-          const res = await thumb({ user_id: this.login_id, article_id: id  })
+          const res = await articleThumb({ user_id: this.login_id, article_id: id  })
           if (res.code === '000000') {
             const itemNew = Object.assign({}, item, {
               thumb_flag: 1,

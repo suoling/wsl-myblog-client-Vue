@@ -1,5 +1,5 @@
 <template>
-  <div class="article-detail" ref="articleDetail">
+  <div class="article-detail">
     <div class="nav">
       <div class="left">
         <el-link icon="el-icon-user" :underline="false" v-if="phone">当前用户：{{ phone }}</el-link>
@@ -59,7 +59,11 @@
               <span>{{item.create_time | datefmt('YYYY-MM-DD HH:mm:ss')}}</span>
             </div>
             <div class="opera">
-              <i class="el-icon-thumb"><span>{{ 0 }}</span></i>
+              <i
+                class="el-icon-thumb"
+                :class="item.thumb_flag === 1 ? 'actived' : ''"
+                @click.stop="thumbOpera(item, index)"
+              ><span>{{ item.thumb_count }}</span></i>
               <i class="el-icon-s-comment" @click="replyHandle(item.id, item.user_id)">回复</i>
             </div>
           </div>
@@ -72,7 +76,11 @@
                   <span>{{childItem.create_time | datefmt('YYYY-MM-DD HH:mm:ss')}}</span>
                 </div>
                 <div class="opera">
-                  <i class="el-icon-thumb"><span>{{ 0 }}</span></i>
+                  <i
+                    class="el-icon-thumb"
+                    :class="childItem.thumb_flag === 1 ? 'actived' : ''"
+                    @click.stop="thumbOpera(childItem, index)"
+                  ><span>{{ childItem.thumb_count }}</span></i>
                   <i class="el-icon-s-comment" @click="replyHandle(childItem.id, childItem.user_id)">回复</i>
                 </div>
               </div>
@@ -120,8 +128,10 @@
 
 <script>
 import { mapState } from 'vuex';
-import { articleDetail } from '../api/article'
-import { commentQuery, commentAdd } from '../api/comment'
+import { articleDetail } from '../api/article';
+import { commentQuery, commentAdd } from '../api/comment';
+import { commentThumb, commentThumbCancel } from '../api/commentThumb';
+
 export default {
   data () {
     return {
@@ -209,21 +219,46 @@ export default {
       } catch (err) {
         console.log('err:', err)
       }
-    }
-    
-  },
+    },
 
-  // 评论时页面滚动条始终在底部
-  updated () {
-    const { type } = this.$route.params
-    if (type === 'comment') {
-      this.$refs.commentBody.scrollIntoView()
-      // this.$refs.articleDetail.scrollTop = this.$refs.articleDetail.scrollHeight
-    }
+    // 点赞或者取消赞操作
+    async thumbOpera (item) {
+      const { id, thumb_flag } = item
+      if (!this.login_id) {
+        this.$message.error('请前往登陆');
+        return
+      }
+      // 取消赞
+      if (thumb_flag === 1) {
+        try {
+          const res = await commentThumbCancel({ user_id: this.login_id, comment_id: id })
+          if (res.code === '000000') {
+            this.queryComment(item.article_id)
+          } else {
+            this.$message.error(res.msg);
+          }
+        } catch(err) {
+          console.log('err:', err)
+        }
+      }
+      // 点赞
+      if (thumb_flag === 0) {
+        try {
+          const res = await commentThumb({ user_id: this.login_id, comment_id: id  })
+          if (res.code === '000000') {
+            this.queryComment(item.article_id)
+          } else {
+            this.$message.error(res.msg);
+          }
+        } catch(err) {
+          console.log('err:', err)
+        }
+      }
+    },
   },
 
   async mounted () {
-    const { id } = this.$route.params
+    const { id, type } = this.$route.params
     const res = await articleDetail({ id })
     if (res.code === '000000') {
       console.log('res:', res)
@@ -231,6 +266,9 @@ export default {
       this.queryComment(id)
     } else {
       this.$message.error(res.msg);
+    }
+    if (type === 'comment') {
+      this.$refs.commentBody.scrollIntoView()
     }
   }
 }
@@ -318,6 +356,16 @@ export default {
             justify-content: space-between;
             i {
               cursor: pointer;
+              &:hover {
+                color: deepskyblue;
+              }
+              span {
+                margin: 0 10px;
+                color: #000;
+              }
+            }
+            .actived {
+              color: deepskyblue;
             }
           }
         }
