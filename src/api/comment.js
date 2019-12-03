@@ -8,3 +8,8 @@ export const commentQuery = async function ({ article_id }) {
 export const commentAdd = async function ({ user_id, article_id, prev_id, content }) {
   return await request('comment/add', { user_id, article_id, prev_id, content })
 }
+
+// 删除评论
+export const commentDelete = async function ({ comment_id }) {
+  return await request('comment/delete', { comment_id })
+}

@@ -52,7 +52,15 @@
       </div>
       <div class="comment-list">
         <div class="comment-item" v-for="(item, index) in commentList" :key="index">
-          <div class="user">{{item.user_id}}</div>
+          <div class="user" style="display: flex; justify-content: space-between;">
+            <div>{{item.user_id}}</div>
+            <div>
+              <i
+                v-if="item.user_id === login_id"
+                class="el-icon-delete"
+                @click="deleteComment(item.id, item.article_id)"></i>
+            </div>
+          </div>
           <div class="content">{{item.content}}</div>
           <div class="bottom">
             <div class="create-time">
@@ -62,15 +70,27 @@
               <i
                 class="el-icon-thumb"
                 :class="item.thumb_flag === 1 ? 'actived' : ''"
-                @click.stop="thumbOpera(item, index)"
-              ><span>{{ item.thumb_count }}</span></i>
-              <i class="el-icon-s-comment" @click="replyHandle(item.id, item.user_id)">回复</i>
+                @click.stop="thumbOpera(item, index)">
+                <span>{{ item.thumb_count }}</span>
+              </i>
+              <i class="el-icon-s-comment" @click="replyHandle(item.id, item.user_id)">
+                <span>回复</span>
+              </i>
             </div>
           </div>
           <div class="reply-content" v-if="item.children && item.children.length > 0">
             <div class="reply-item" v-for="(childItem, childIndex) in item.children" :key="childIndex">
-              <div class="user">{{childItem.user_id}}</div>
-              <div class="content">回复{{ item.user_id }}：{{childItem.content}}</div>
+              <div class="user" style="display: flex; justify-content: space-between;">
+                <div>{{childItem.user_id}}</div>
+                  <div>
+                    <i
+                      v-if="childItem.user_id === login_id"
+                      class="el-icon-delete"
+                      @click="deleteComment(childItem.id, childItem.article_id)"
+                    ></i>
+                  </div>
+              </div>
+              <div class="content">回复{{ childItem.reply_user }}：{{childItem.content}}</div>
               <div class="bottom">
                 <div class="create-time">
                   <span>{{childItem.create_time | datefmt('YYYY-MM-DD HH:mm:ss')}}</span>
@@ -79,9 +99,12 @@
                   <i
                     class="el-icon-thumb"
                     :class="childItem.thumb_flag === 1 ? 'actived' : ''"
-                    @click.stop="thumbOpera(childItem, index)"
-                  ><span>{{ childItem.thumb_count }}</span></i>
-                  <i class="el-icon-s-comment" @click="replyHandle(childItem.id, childItem.user_id)">回复</i>
+                    @click.stop="thumbOpera(childItem, index)">
+                    <span>{{ childItem.thumb_count }}</span>
+                  </i>
+                  <i class="el-icon-s-comment" @click="replyHandle(childItem.id, childItem.user_id)">
+                    <span>回复</span>
+                  </i>
                 </div>
               </div>
               <div class="reply" v-if="replyId === childItem.id">
@@ -98,7 +121,7 @@
                   </el-input>
                 </div>
                 <div v-if="commentId === childItem.id" class="commit">
-                  <el-button type="primary" @click="submitComment(item.id)">提交</el-button>
+                  <el-button type="primary" @click="submitComment(childItem.id)">提交</el-button>
                 </div>
               </div>
             </div>
@@ -129,7 +152,7 @@
 <script>
 import { mapState } from 'vuex';
 import { articleDetail } from '../api/article';
-import { commentQuery, commentAdd } from '../api/comment';
+import { commentQuery, commentAdd, commentDelete } from '../api/comment';
 import { commentThumb, commentThumbCancel } from '../api/commentThumb';
 
 export default {
@@ -255,6 +278,20 @@ export default {
         }
       }
     },
+
+    // 删除评论
+    async deleteComment (comment_id, article_id) {
+      try {
+        const res = await commentDelete({ comment_id })
+        if (res.code === '000000') {
+          this.queryComment(article_id)
+        } else {
+          this.$message.error(res.msg);
+        }
+      } catch (err) {
+        console.log('err:', err)
+      }
+    }
   },
 
   async mounted () {
@@ -339,6 +376,12 @@ export default {
         border-bottom: 1px solid #e4e7ed;
         .user {
           padding: 10px 0;
+          i {
+              cursor: pointer;
+              &:hover {
+                color: deepskyblue;
+              }
+            }
         }
         .content {
 
