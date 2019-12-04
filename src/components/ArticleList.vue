@@ -12,10 +12,10 @@
           :type="type === 'mine' ? 'primary' : 'default'"
           :underline="false" @click="query('mine')"
         >我的文章</el-link>
-        <!-- <el-link
-            :type="type === 'collect' ? 'primary' : 'default'"
-            :underline="false" @click="query('collect')"
-          >我的收藏</el-link> -->
+        <el-link
+          :type="type === 'collect' ? 'primary' : 'default'"
+          :underline="false" @click="query('collect')"
+        >我的收藏</el-link>
       </div>
       <div>
         <el-link :underline="false">{{totalNum}}</el-link>
@@ -41,17 +41,23 @@
         </div>
         <div class="item-middle">{{item.description}}</div>
         <div class="item-bottom">
-          <i class="el-icon-thumb"
-              :class="item.thumb_flag === 1 ? 'actived' : ''"
-              @click.stop="thumbOpera(item, index)">
+          <i
+            class="el-icon-thumb"
+            :class="item.thumb_flag === 1 ? 'actived' : ''"
+            @click.stop="thumbOpera(item, index)"
+          >
             <span>{{ item.thumb_count }}</span>
           </i>
-          <i class="el-icon-share" @click.stop="shareOpera()"></i>
-          <i class="el-icon-star-on" @click.stop="starOpera()"></i>
           <i class="el-icon-s-comment"
             @click.stop="commentOpera(item.id, 'comment')">
             <span>{{ item.comment_count }}</span>
           </i>
+          <i class="el-icon-share" @click.stop="shareOpera()"></i>
+          <i
+            class="el-icon-star-on"
+            :class="item.collect_flag === 1 ? 'actived' : ''"
+            @click.stop="starOpera(item, index)"
+          ></i>
         </div>
       </div>
       <p class="no-data" v-if="loading">加载中...</p>
@@ -65,6 +71,7 @@
 import { mapState } from 'vuex';
 import { articleQuery, articleDelete } from '../api/article';
 import { articleThumb, articleThumbCancel } from '../api/articleThumb';
+import { articleCollectQuery, articleCollect, articleCollectCancel } from '../api/articleCollect';
 
 export default {
   data () {
@@ -120,7 +127,12 @@ export default {
         this.page_size = 0
         this.articleList = []
       }
-      const res = await articleQuery({ type, login_id, page_size: this.page_size, page_num })
+      let res
+      if (type === 'all' || type === 'mine') {
+        res = await articleQuery({ type, login_id, page_size: this.page_size, page_num })
+      } else {
+        res = await articleCollectQuery({ login_id, page_size: this.page_size, page_num })
+      }
       console.log('res:', res)
       if (res.code === '000000') {
         this.type = type
@@ -213,13 +225,46 @@ export default {
       console.log('share')
     },
 
-    // 收藏
-    starOpera () {
-      if (!this.login_id) {
+    // 收藏或者取消收藏操作
+    async starOpera (item, index) {
+      const { login_id, type } = this
+      const { id, collect_flag } = item
+      if (!login_id) {
         this.$message.error('请前往登陆');
         return
       }
-      console.log('star')
+      // 取消收藏
+      if (collect_flag === 1) {
+        try {
+          const res = await articleCollectCancel({ user_id: login_id, article_id: id })
+          if (res.code === '000000') {
+            const itemNew = Object.assign({}, item, { collect_flag: 0 })
+            if (type === 'collect') {
+              this.articleList = [...this.articleList.slice(0, index), ...this.articleList.slice(index + 1)]
+            } else {
+              this.articleList = Object.assign([], this.articleList, { [index]: itemNew })
+            }
+          } else {
+            this.$message.error(res.msg);
+          }
+        } catch(err) {
+          console.log('err:', err)
+        }
+      }
+      // 收藏
+      if (collect_flag === 0) {
+        try {
+          const res = await articleCollect({ user_id: login_id, article_id: id  })
+          if (res.code === '000000') {
+            const itemNew = Object.assign({}, item, { collect_flag: 1 })
+            this.articleList = Object.assign([], this.articleList, { [index]: itemNew })
+          } else {
+            this.$message.error(res.msg);
+          }
+        } catch(err) {
+          console.log('err:', err)
+        }
+      }
     },
 
     // 评论
@@ -282,10 +327,12 @@ export default {
       .item-bottom {
         padding: 10px 0;
         width: 100%;
-        display: inline-flex;
-        justify-content: space-around;
+        // display: inline-flex;
+        // justify-content: space-around;
         border-bottom: 1px dashed #ccc;
         i {
+          width: 25%;
+          text-align: center;
           cursor: pointer;
           &:hover {
             color: deepskyblue;
