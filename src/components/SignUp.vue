@@ -1,12 +1,17 @@
 <template>
-  <el-container>
-    <el-header>Welcome to my blog，请注册</el-header>
-    <el-container>
-      <el-aside width="25%">Aside</el-aside>
-      <el-main>
+  <div class="mask" v-if="showFlag">
+    <div class="content">
+      <div class="close">
+        <i class="el-icon-close" @click="$emit('signUpClose')"></i>
+      </div>
+      <el-divider class="title">注册</el-divider>
+      <el-main class="main">
         <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
           <el-form-item label="账号" prop="phone">
             <el-input prefix-icon="el-icon-user" v-model.number="ruleForm.phone"></el-input>
+          </el-form-item>
+          <el-form-item label="昵称" prop="nickname">
+            <el-input prefix-icon="el-icon-collection-tag" v-model="ruleForm.nickname"></el-input>
           </el-form-item>
           <el-form-item label="密码" prop="pass">
             <el-input prefix-icon="el-icon-key" type="password" v-model="ruleForm.pass" autocomplete="off"></el-input>
@@ -18,21 +23,26 @@
             <el-button type="primary" @click="submitForm('ruleForm')">注册</el-button>
             <el-button @click="resetForm('ruleForm')">重置</el-button>
           </el-form-item>
-          <el-form-item>
-            <el-link type="info" :underline="false" @click="signIn">去往登陆</el-link>
-          </el-form-item>
         </el-form>
+        <div class="login">
+          <el-link type="primary" :underline="false" @click="$emit('toSignIn')">已有账号，去登录</el-link>
+        </div>
       </el-main>
-      <el-aside width="25%">Aside</el-aside>
-    </el-container>
-    <el-footer>wangsuoling@163.com</el-footer>
-  </el-container>
+    </div>
+  </div>
 </template>
 
 <script>
 import { userRegister, userCheckPhone } from '../api/user'
 
 export default {
+  props: {
+    showFlag : {
+      type: Boolean,
+      default: false
+    }
+  },
+
   data() {
     let checkPhone = async (rule, value, callback) => {
       if (!value) {
@@ -50,6 +60,13 @@ export default {
         } else {
           callback()
         }
+      }
+    };
+    let requireNickname = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入昵称'))
+      } else {
+        callback()
       }
     };
     let validatePass = (rule, value, callback) => {
@@ -72,9 +89,10 @@ export default {
       }
     };
     return {
-      ruleForm: { exist: false, phone: '', pass: '', checkPass: '' },
+      ruleForm: { exist: false, phone: '', nickname: '', pass: '', checkPass: '' },
       rules: {
         phone: [{ validator: checkPhone, trigger: 'blur' }],
+        nickname: [{ validator: requireNickname, trigger: 'blur' }],
         pass: [{ validator: validatePass, trigger: 'blur' }],
         checkPass: [{ validator: validatePass2, trigger: 'blur' }]
       }
@@ -84,11 +102,11 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          const { phone, pass } = this.ruleForm
-          const res = await userRegister({ phone, pass })
+          const { phone, nickname, pass } = this.ruleForm
+          const res = await userRegister({ phone, nickname, pass })
           console.log('res:', res)
           if (res.code === '000000') {
-            this.$router.push('/login')
+            this.$emit('signUpClose')
           }
         } else {
           console.log('error submit!!');
@@ -99,9 +117,6 @@ export default {
     resetForm(formName) {
       this.$refs[formName].resetFields();
     },
-    signIn () {
-      this.$router.push('/login')
-    }
   },
 
   created () {
@@ -111,33 +126,42 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.el-header, .el-footer {
-    background-color: #B3C0D1;
-    color: #333;
-    text-align: center;
-    height: 200px !important;
-    line-height: 200px;
-  }
-  
-  .el-aside {
-    background-color: #D3DCE6;
-    color: #333;
-    text-align: center;
-    line-height: 200px;
-  }
-  
-  .el-main {
-    background-color: #E9EEF3;
-    color: #333;
-    text-align: center;
-    // line-height: 160px;
-    overflow: hidden;
-  }
-  
-  .el-container {
-    height: 100%;
-    &:nth-child(2) {
-      height: calc(100% - 400px);
+.mask {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.57);
+  .content {
+    padding: 50px 0;
+    background: #fff;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: 0;
+    .close {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      cursor: pointer;
+    }
+    .el-divider__text {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .main {
+      .el-form {
+        padding: 0px 50px 0 0;
+      }
+    }
+    .login {
+      text-align: center;
     }
   }
+}
 </style>

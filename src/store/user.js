@@ -8,6 +8,7 @@ const initState = () => ({
   is_login: false,
   login_id: null,
   phone: null,
+  nickname: ''
 });
 const state = initState();
 
@@ -15,17 +16,17 @@ const getters = {};
 
 const mutations = {
   [types.SET_USER_INFO](state, payload) {
-    console.log(state, payload)
     state.is_login = true;
     state.login_id = payload.login_id;
     state.phone = payload.phone;
+    state.nickname = payload.nickname;
   },
 };
 
 const actions = {
   async login({ commit }, payload) {
-    const { phone, pass } = payload
-    const res = await userLogin({ phone, pass })
+    const { phone, nickname, pass } = payload
+    const res = await userLogin({ phone, nickname, pass })
     commit(types.SET_USER_INFO, res);
     return res;
   },

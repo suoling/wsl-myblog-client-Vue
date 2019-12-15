@@ -2,7 +2,7 @@
   <div class="article-detail">
     <div class="nav">
       <div class="left">
-        <el-link icon="el-icon-user" :underline="false" v-if="phone">当前用户：{{ phone }}</el-link>
+        <el-link icon="el-icon-user" :underline="false" v-if="phone">当前用户：{{ nickname }}</el-link>
         <el-link icon="el-icon-user" v-if="!phone" @click="toLogin()">前往登陆</el-link>
         <el-link type="primary">文章标题：{{articleDetail.title}}</el-link>
       </div>
@@ -32,7 +32,7 @@
       <div class="title">评论</div>
       <div class="add-comment">
         <div class="add">
-          <div class="user">{{ phone }}</div>
+          <div class="user">{{ nickname }}</div>
           <div class="reply">
             <div class="input">
               <el-input
@@ -53,7 +53,7 @@
       <div class="comment-list">
         <div class="comment-item" v-for="(item, index) in commentList" :key="index">
           <div class="user" style="display: flex; justify-content: space-between;">
-            <div>{{item.user_id}}</div>
+            <div>{{item.nickname}}</div>
             <div>
               <i
                 v-if="item.user_id === login_id"
@@ -73,7 +73,7 @@
                 @click.stop="thumbOpera(item, index)">
                 <span>{{ item.thumb_count }}</span>
               </i>
-              <i class="el-icon-s-comment" @click="replyHandle(item.id, item.user_id)">
+              <i class="el-icon-s-comment" @click="replyHandle(item.id, item.nickname)">
                 <span>回复</span>
               </i>
             </div>
@@ -81,7 +81,7 @@
           <div class="reply-content" v-if="item.children && item.children.length > 0">
             <div class="reply-item" v-for="(childItem, childIndex) in item.children" :key="childIndex">
               <div class="user" style="display: flex; justify-content: space-between;">
-                <div>{{childItem.user_id}}</div>
+                <div>{{childItem.nickname}}</div>
                   <div>
                     <i
                       v-if="childItem.user_id === login_id"
@@ -102,7 +102,7 @@
                     @click.stop="thumbOpera(childItem, index)">
                     <span>{{ childItem.thumb_count }}</span>
                   </i>
-                  <i class="el-icon-s-comment" @click="replyHandle(childItem.id, childItem.user_id)">
+                  <i class="el-icon-s-comment" @click="replyHandle(childItem.id, childItem.nickname)">
                     <span>回复</span>
                   </i>
                 </div>
@@ -156,6 +156,8 @@ import { commentQuery, commentAdd, commentDelete } from '../api/comment';
 import { commentThumb, commentThumbCancel } from '../api/commentThumb';
 
 export default {
+  props: ['id', 'type'],
+
   data () {
     return {
       articleDetail: '',
@@ -170,7 +172,7 @@ export default {
   },
 
   computed: {
-    ...mapState('user', ['login_id', 'phone']),
+    ...mapState('user', ['login_id', 'phone', 'nickname']),
   },
 
   methods: {
@@ -192,12 +194,12 @@ export default {
 
     // 返回列表页
     toList () {
-      this.$router.push(`/article/list`)
+      this.$router.push({ name: 'article/list' })
     },
 
     // 去往文章编辑页面
     toEdit () {
-      this.$router.push(`/article/edit/${this.articleDetail.id}`)
+      this.$router.push({ path: '/article/opera', query: { type: 'update', id: this.articleDetail.id } })
     },
 
     // 添加评论
@@ -210,13 +212,13 @@ export default {
     },
 
     // 添加回复
-    replyHandle (id, user_id) {
+    replyHandle (id, nickname) {
       if (!this.login_id) {
         this.$message.error('请前往登陆');
         return
       }
       this.replyId = id
-      this.replyplaceholder = `回复${user_id}：`
+      this.replyplaceholder = `回复${nickname}：`
     },
 
     // 提交评论
@@ -294,18 +296,20 @@ export default {
     }
   },
 
+  updated () {
+    if (this.type === 'comment') {
+      this.$refs.commentBody.scrollIntoView()
+    }
+  },
+
   async mounted () {
-    const { id, type } = this.$route.params
-    const res = await articleDetail({ id })
+    const res = await articleDetail({ id: this.id })
     if (res.code === '000000') {
       console.log('res:', res)
       this.articleDetail = res.articleDetail
-      this.queryComment(id)
+      this.queryComment(this.id)
     } else {
       this.$message.error(res.msg);
-    }
-    if (type === 'comment') {
-      this.$refs.commentBody.scrollIntoView()
     }
   }
 }

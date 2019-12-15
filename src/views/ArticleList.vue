@@ -2,7 +2,7 @@
   <div class="article-list">
     <div class="top">
       <div>
-        <el-link icon="el-icon-user" :underline="false" v-if="phone">当前用户：{{ phone }}</el-link>
+        <el-link icon="el-icon-user" :underline="false" v-if="phone">当前用户：{{ nickname }}</el-link>
         <el-link icon="el-icon-user" v-if="!phone" @click="toLogin()">前往登陆</el-link>
         <el-link
           :type="type === 'all' ? 'primary' : 'default'"
@@ -64,16 +64,40 @@
       <p class="no-data" v-if="noMore">没有更多的数据了...</p>
       <el-backtop target=".list"></el-backtop>
     </div>
+    <sign-up
+      :showFlag="registerFlag"
+      v-on:toSignIn="loginFlag = true, registerFlag = false"
+      v-on:signUpClose="loginFlag = false, registerFlag = false"
+    />
+    <sign-in
+      :showFlag="loginFlag"
+      v-on:toSignUp="loginFlag = false, registerFlag = true"
+      v-on:signInClose="loginFlag = false, registerFlag = false"
+    />
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex';
+import SignUp from '../components/SignUp';
+import SignIn from '../components/SignIn';
 import { articleQuery, articleDelete } from '../api/article';
 import { articleThumb, articleThumbCancel } from '../api/articleThumb';
 import { articleCollectQuery, articleCollect, articleCollectCancel } from '../api/articleCollect';
 
 export default {
+  props: {
+    listFlag: {
+      type: String,
+      default: ''
+    }
+  },
+
+  components: {
+    'sign-up': SignUp,
+    'sign-in': SignIn,
+  },
+
   data () {
     return {
       type: 'all',
@@ -81,12 +105,14 @@ export default {
       page_size: 0,
       page_num: 10,
       totalNum: 0,
-      loading: false
+      loading: false,
+      registerFlag: false,
+      loginFlag: false
     }
   },
 
   computed: {
-    ...mapState('user', ['login_id', 'phone']),
+    ...mapState('user', ['login_id', 'phone', 'nickname']),
 
     noMore () {
       return this.page_size === Math.floor(this.totalNum / this.page_num)
@@ -102,6 +128,10 @@ export default {
     this.query(this.type)
   },
 
+  mounted () {
+    console.log('listFlag:', this.listFlag)
+  },
+
   methods: {
     // 列表加载更多
     loadMore () {
@@ -113,14 +143,16 @@ export default {
 
     // 去往登陆
     toLogin () {
-      this.$router.push('/login')
+      // this.$router.push({ path: '/login' })
+      this.loginFlag = true
     },
 
     // 文章列表查询
     async query (type) {
       const { login_id, page_num } = this
       if (!login_id && type !== 'all') {
-        this.$message.error('请前往登陆');
+        // this.$message.error('请前往登陆');
+        this.registerFlag = true
         return
       }
       if (type !== this.type) {
@@ -147,10 +179,11 @@ export default {
     // 跳转至发布文章页
     articlePublish () {
       if (!this.login_id) {
-        this.$message.error('请前往登陆');
+        // this.$message.error('请前往登陆');
+        this.registerFlag = true
         return
       }
-      this.$router.push('/article/publish')
+      this.$router.push({ path: '/article/opera', query: { type: 'publish' } })
     },
 
     // 文章删除
@@ -170,14 +203,15 @@ export default {
 
     // 跳转至文章详情
     toDetail (id, type) {
-      this.$router.push(`/article/detail/${id}/${type}`)
+      this.$router.push({ name: 'article/detail', params: { id, type } })
     },
 
     // 点赞或者取消赞操作
     async thumbOpera (item, index) {
       const { id, thumb_flag } = item
       if (!this.login_id) {
-        this.$message.error('请前往登陆');
+        // this.$message.error('请前往登陆');
+        this.registerFlag = true
         return
       }
       // 取消赞
@@ -219,7 +253,8 @@ export default {
     // 分享
     shareOpera () {
       if (!this.login_id) {
-        this.$message.error('请前往登陆');
+        // this.$message.error('请前往登陆');
+        this.registerFlag = true
         return
       }
       console.log('share')
@@ -230,7 +265,8 @@ export default {
       const { login_id, type } = this
       const { id, collect_flag } = item
       if (!login_id) {
-        this.$message.error('请前往登陆');
+        // this.$message.error('请前往登陆');
+        this.registerFlag = true
         return
       }
       // 取消收藏
@@ -270,7 +306,8 @@ export default {
     // 评论
     commentOpera (id, type) {
       if (!this.login_id) {
-        this.$message.error('请前往登陆');
+        // this.$message.error('请前往登陆');
+        this.registerFlag = true
         return
       }
       this.$router.push(`/article/detail/${id}/${type}`)
